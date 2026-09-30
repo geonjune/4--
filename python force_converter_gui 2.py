@@ -57,6 +57,10 @@ def clear_input():
     value_entry.focus()
 
 
+def clear_history():
+    history_list.delete(0, tk.END)
+
+
 window = tk.Tk()
 window.title("공학용 힘 단위 변환기")
 window.geometry("620x650")
@@ -166,13 +170,29 @@ result_label = tk.Label(
 )
 result_label.pack(pady=15)
 
+history_header = tk.Frame(window, bg="#202124")
+history_header.pack(fill="x", padx=20)
+
 tk.Label(
-    window,
+    history_header,
     text="변환 기록",
     font=("맑은 고딕", 12, "bold"),
     bg="#202124",
     fg="white"
-).pack()
+).pack(side="left")
+
+tk.Button(
+    history_header,
+    text="기록 지우기",
+    command=clear_history,
+    bg="#3C4043",
+    fg="white",
+    activebackground="#5F6368",
+    activeforeground="white",
+    relief="flat",
+    padx=8,
+    pady=2
+).pack(side="right")
 
 history_list = tk.Listbox(
     window,
@@ -185,5 +205,6 @@ history_list = tk.Listbox(
 )
 history_list.pack(padx=20, pady=8)
 
+window.bind("<Return>", lambda event: convert_force())
 value_entry.focus()
 window.mainloop()
