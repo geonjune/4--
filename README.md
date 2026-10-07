@@ -1,23 +1,37 @@
-# 공학용 힘 단위 변환기
+# 힘 단위 변환기 및 하중 분석기
 
 ## 프로그램 용도
 
-Tkinter 그래픽 화면에서 힘의 크기를 입력하고 `kN`, `N`, `kgf` 단위로 변환하는 프로그램입니다. 변환 결과는 `N`과 `kgf`로 표시되며, 변환한 값은 화면의 변환 기록에 추가됩니다.
+Tkinter 그래픽 화면에서 힘의 크기를 `kN`, `N`, `kgf` 단위로 변환하는 프로그램과, CSV의 시간·하중 데이터를 분석하는 프로그램으로 구성되어 있습니다. 하중 분석기는 응력을 계산하고 결과 CSV와 시간-응력 그래프를 생성합니다.
 
 ## 필요 환경
 
 - Python 3
 - Tkinter가 설치된 Python 환경
 - 그래픽 화면을 표시할 수 있는 데스크톱 환경
+- 하중 분석기용 `matplotlib`
 
-별도 외부 Python 패키지는 사용하지 않습니다. Windows용 일반 Python 설치에는 Tkinter가 포함되어 있지만, 설치 구성에 따라 다를 수 있습니다.
+힘 단위 변환기는 Python 표준 라이브러리만 사용합니다. 하중 분석기는 그래프 저장을 위해 `matplotlib`이 필요합니다. Windows용 일반 Python 설치에는 Tkinter가 포함되어 있지만, 설치 구성에 따라 다를 수 있습니다.
 
 ## 실행
 
 PowerShell에서 이 폴더로 이동한 뒤 실행합니다.
 
 ```powershell
-python ".\python force_converter_gui 2.py"
+.\.venv\Scripts\python.exe ".\python force_converter_gui 2.py"
+.\.venv\Scripts\python.exe .\load_analyzer.py
+```
+
+하중 분석기는 기본으로 `load_bad.csv`를 읽습니다. 다른 CSV를 분석하려면 파일명을 인수로 지정합니다.
+
+```powershell
+.\.venv\Scripts\python.exe .\load_analyzer.py .\load_data.csv
+```
+
+`matplotlib`이 설치되어 있지 않다면 가상 환경에 설치합니다.
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install matplotlib
 ```
 
 ## 입력 방법
@@ -48,3 +62,21 @@ python ".\python force_converter_gui 2.py"
 | `-3` | `kgf` | 음수 입력은 허용되지 않음 |
 | `NaN` 또는 `inf` | `N` | 유한한 숫자가 아님 |
 | `5` | `lb` | 지원하지 않는 단위 |
+
+## 하중 분석기
+
+### 입력 데이터
+
+CSV에는 `time_s`와 `force_N` 열이 있어야 합니다. 시간 단위는 초(s), 하중 단위는 뉴턴(N)입니다. 입력 파일은 수정하지 않습니다.
+
+### 계산 및 출력
+
+- 단면적 `100 mm²`를 사용해 `stress_MPa = force_N / 100`으로 응력을 계산합니다. `N/mm²`는 `MPa`와 같습니다.
+- 최대하중과 해당 시간, 최대응력과 해당 시간을 출력합니다.
+- 기준 응력 `6 MPa`를 초과하는 데이터 개수를 출력합니다. 응력이 정확히 `6 MPa`인 값은 초과 개수에 포함하지 않습니다.
+- 시간-응력 그래프에 모든 유효 데이터 점과 연결선을 표시하고, 최대응력 지점을 강조해 값을 표시합니다. 축 이름은 `Time (s)`, `Stres (MPa)`입니다.
+- `load_result.csv`에 유효 데이터와 `stress_MPa` 열을 저장하고, 그래프는 `stress_plot.png`로 저장합니다. 두 결과 파일은 프로그램과 같은 폴더에 생성됩니다.
+
+### 잘못된 행 처리
+
+`time_s` 또는 `force_N`이 빈칸, 숫자가 아닌 값, 유한하지 않은 숫자이면 해당 행의 CSV 행 번호와 문제 열·값·이유를 출력하고 계산과 그래프에서 제외합니다. 제외한 행 수와 유효한 데이터 수를 함께 출력합니다. 유효한 데이터가 하나도 없으면 계산과 그래프 생성을 중단합니다.

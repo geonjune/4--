@@ -15,7 +15,7 @@ def main():
 
     result_path = Path(__file__).with_name("load_result.csv")
     plot_path = Path(__file__).with_name("stress_plot.png")
-    cross_section_area_mm2 = 200
+    cross_section_area_mm2 = 100
     threshold_stress_mpa = 6
 
     with input_path.open("r", newline="", encoding="utf-8-sig") as csv_file:
